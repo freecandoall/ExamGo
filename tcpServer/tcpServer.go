@@ -1,52 +1,52 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"io"
 	"net"
-	"os"
-	"strings" // only needed below for sample processing
+	// only needed below for sample processing
 )
+
+func ConnHandler(c net.Conn) {
+
+	data := make([]byte, 4096)
+
+	for {
+		n, err := c.Read(data)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		fmt.Println(string(data[:n]))
+
+		_, err = c.Write(data[:n])
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+	}
+}
 
 func main() {
 
 	fmt.Println("Launching server...")
 
-	// listen on all interfaces
-	ln, _ := net.Listen("tcp", ":8081")
+	ln, err := net.Listen("tcp", ":8081")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer ln.Close()
 
-	// accept connection on port
-	conn, _ := ln.Accept()
-
-	// run loop forever (or until ctrl-c)
 	for {
 
-		// will listen for message to process ending in newline (\n)
-		reader := bufio.NewReader(conn)
-
-		line, err := reader.ReadString('\n')
+		conn, err := ln.Accept()
 		if err != nil {
-
-			fmt.Fprintln(os.Stderr, err)
-
-			if err == io.EOF {
-				break
-			}
-		}
-
-		if len(line) == 0 {
-			fmt.Println("Received empty...")
+			fmt.Println(err)
 			continue
 		}
+		defer conn.Close()
 
-		// output message received
-		fmt.Print("Message Received:", string(line))
-
-		// sample process for string received
-		newmessage := strings.ToUpper(line)
-
-		// send new string back to client
-		conn.Write([]byte(newmessage + "\n"))
+		go ConnHandler(conn)
 	}
 }
