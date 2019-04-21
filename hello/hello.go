@@ -1,6 +1,8 @@
 // 참고
 // https://brownbears.tistory.com/313	고루틴의 이해
 // http://golang.site/	고 언어 기본 문법들
+// https://subicura.com/2016/06/13/start-go-shipment-tracking-opensource.html 배송조회 서비스 프로젝트 소개글
+
 package main
 
 import (
